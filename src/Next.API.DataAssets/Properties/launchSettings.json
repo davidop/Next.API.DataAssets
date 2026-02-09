@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Next.API.DataAssets": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:63888;http://localhost:63889"
+    }
+  }
+}
