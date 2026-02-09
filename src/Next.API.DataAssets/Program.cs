@@ -52,7 +52,7 @@ builder.Services.AddSwaggerGen(opt =>
     opt.AddSecurityRequirement(new()
     {
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new Microsoft.OpenApi.OpenApiSecurityScheme
             {
                 Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
@@ -63,7 +63,7 @@ builder.Services.AddSwaggerGen(opt =>
             Array.Empty<string>()
         },
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new Microsoft.OpenApi.OpenApiSecurityScheme
             {
                 Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
