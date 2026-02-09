@@ -1,0 +1,76 @@
+name: Deploy to IIS (Self-hosted)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment name (GitHub Environments)"
+        required: true
+        default: "iis-prod"
+      siteName:
+        description: "IIS site name"
+        required: true
+        default: "Next.API.DataAssets"
+      appPoolName:
+        description: "IIS App Pool name"
+        required: true
+        default: "Next.API.DataAssets"
+      physicalPath:
+        description: "Physical path on server (e.g. C:\\inetpub\\wwwroot\\Next.API.DataAssets)"
+        required: true
+        default: "C:\\inetpub\\wwwroot\\Next.API.DataAssets"
+
+env:
+  DOTNET_VERSION: "8.0.x"
+
+jobs:
+  deploy:
+    # Requires a self-hosted runner installed on the Windows IIS server
+    # with permissions to manage IIS and write to the target folder.
+    runs-on: self-hosted
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish
+        run: dotnet publish src/Next.API.DataAssets/Next.API.DataAssets.csproj -c Release -o out/publish
+
+      - name: Deploy to IIS (stop app pool, copy, start)
+        shell: pwsh
+        run: |
+          $siteName = "${{ inputs.siteName }}"
+          $appPool = "${{ inputs.appPoolName }}"
+          $dest = "${{ inputs.physicalPath }}"
+          $src = Join-Path $PWD "out\publish"
+
+          Import-Module WebAdministration
+
+          Write-Host "Ensuring destination path exists: $dest"
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+
+          if (Test-Path "IIS:\AppPools\$appPool") {
+            Write-Host "Stopping App Pool: $appPool"
+            Stop-WebAppPool -Name $appPool -ErrorAction SilentlyContinue
+          }
+
+          Write-Host "Copying published files to IIS folder..."
+          robocopy $src $dest /MIR /R:2 /W:2 | Out-Null
+
+          # Optional: ensure web.config exists (repo provides deploy/web.config template)
+          if (-not (Test-Path (Join-Path $dest "web.config"))) {
+            Write-Host "No web.config found in destination. Copying template..."
+            Copy-Item -Force (Join-Path $PWD "deploy\web.config") (Join-Path $dest "web.config")
+          }
+
+          if (Test-Path "IIS:\AppPools\$appPool") {
+            Write-Host "Starting App Pool: $appPool"
+            Start-WebAppPool -Name $appPool -ErrorAction SilentlyContinue
+          }
+
+          Write-Host "Done."
