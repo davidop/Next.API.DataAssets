@@ -14,5 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Next.API.DataAssets\Next.API.DataAssets.csproj" />
+    <ProjectReference Include="..\Next.API.DataAssets.IntegrationTests\Next.API.DataAssets.IntegrationTests.csproj" />
   </ItemGroup>
 </Project>

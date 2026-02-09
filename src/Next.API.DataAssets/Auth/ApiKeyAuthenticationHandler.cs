@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System;
+#pragma warning disable CS0618
 
 namespace Next.API.DataAssets.Auth;
 
@@ -22,6 +24,7 @@ public sealed class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAu
         _validator = validator;
         _keysOptions = keysOptions;
     }
+#pragma warning restore CS0618
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {

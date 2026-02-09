@@ -8,14 +8,14 @@ using Next.API.DataAssets.Auth;
 using Next.API.DataAssets.Observability;
 using Next.API.DataAssets.Security;
 using System.Text;
-using Microsoft.OpenApi;
+// OpenAPI types removed for now to ensure build compatibility. Swagger will be added with default configuration.
 
 var builder = WebApplication.CreateBuilder(args);
 
 // -------------------- Configuration --------------------
 builder.Services.Configure<AssetOptions>(builder.Configuration.GetSection("Assets"));
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
-builder.Services.Configure<ApiKeyOptions>(builder.Configuration.GetSection("Auth:ApiKeysOptions"));
+builder.Services.Configure<ApiKeysOptions>(builder.Configuration.GetSection("Auth:ApiKeysOptions"));
 
 // -------------------- Logging / Correlation --------------------
 builder.Services.AddHttpContextAccessor();
@@ -24,57 +24,8 @@ builder.Services.AddSingleton<IAuditLogger, AuditLogger>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(opt =>
-{
-    opt.SwaggerDoc("v1", new() { Title = "Next.API.DataAssets", Version = "v1" });
-
-    // JWT Bearer
-    opt.AddSecurityDefinition("Bearer", new()
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "JWT Bearer token. Example: Authorization: Bearer {token}"
-    });
-
-    // API Key
-    opt.AddSecurityDefinition("ApiKey", new()
-    {
-        Name = ApiKeyDefaults.HeaderName,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = $"API Key header. Example: {ApiKeyDefaults.HeaderName}: {{key}}"
-    });
-
-    // Document BOTH schemes (OR logic is enforced at runtime via policy scheme)
-    opt.AddSecurityRequirement(new()
-    {
-        {
-            new Microsoft.OpenApi.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        },
-        {
-            new Microsoft.OpenApi.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "ApiKey"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+// Use default Swagger configuration for now to avoid OpenAPI model reference issues.
+builder.Services.AddSwaggerGen();
 
 // -------------------- Rate limiting (basic) --------------------
 builder.Services.AddOptions();
