@@ -8,6 +8,7 @@ using Next.API.DataAssets.Auth;
 using Next.API.DataAssets.Observability;
 using Next.API.DataAssets.Security;
 using System.Text;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
