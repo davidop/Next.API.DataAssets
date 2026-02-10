@@ -11,8 +11,7 @@ API de entrega de ficheros (data assets) protegida por **JWT** o **API Key** (OR
 | .NET Version | Windows Server Mínimo | Estado | Notas |
 |--------------|----------------------|--------|-------|
 | .NET 10.0 | Windows Server 2016+ | ✅ Recomendado | Versión actual del proyecto |
-| .NET 8.0 (LTS) | Windows Server 2016+ | ✅ Compatible | Soporte a largo plazo hasta 2026 |
-| .NET 6.0 (LTS) | Windows Server 2016+ | ⚠️ Compatible | Fin de soporte: Nov 2024 |
+| .NET 8.0 (LTS) | Windows Server 2016+ | ✅ Compatible | Soporte a largo plazo hasta Noviembre 2026 |
 
 **Windows Server 2012/R2** alcanzó el fin de soporte en Octubre 2023 y **NO es compatible** con .NET 6+ (Core/moderno).
 
