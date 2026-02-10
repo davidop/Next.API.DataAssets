@@ -18,4 +18,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Next.API.DataAssets\Next.API.DataAssets.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="assets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
