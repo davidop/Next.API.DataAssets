@@ -63,12 +63,12 @@ function Write-Success {
     Write-Host "[OK] $Message" -ForegroundColor Green
 }
 
-function Write-Warning {
+function Write-StepWarning {
     param([string]$Message)
     Write-Host "[WARN] $Message" -ForegroundColor Yellow
 }
 
-function Write-Error {
+function Write-StepError {
     param([string]$Message)
     Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
@@ -97,7 +97,7 @@ if (-not $ZipPath) {
 $projectPath = Join-Path $repoRoot "src\Next.API.DataAssets\Next.API.DataAssets.csproj"
 
 if (-not (Test-Path $projectPath)) {
-    Write-Error "Project file not found: $projectPath"
+    Write-StepError "Project file not found: $projectPath"
     Write-Host "  Make sure to run this script from the deploy/iis folder or adjust paths" -ForegroundColor Red
     exit 1
 }
@@ -132,14 +132,14 @@ try {
     & dotnet @publishArgs
     
     if ($LASTEXITCODE -ne 0) {
-        Write-Error "Publish failed with exit code $LASTEXITCODE"
+        Write-StepError "Publish failed with exit code $LASTEXITCODE"
         exit $LASTEXITCODE
     }
     
     Write-Success "Application published successfully"
 }
 catch {
-    Write-Error "Publish failed: $_"
+    Write-StepError "Publish failed: $_"
     exit 1
 }
 
@@ -153,7 +153,7 @@ if (Test-Path $webConfigSource) {
     Write-Success "web.config copied"
 }
 else {
-    Write-Warning "web.config not found at: $webConfigSource"
+    Write-StepWarning "web.config not found at: $webConfigSource"
 }
 
 # Step 4: Create example production appsettings
@@ -335,7 +335,7 @@ if ($IncludeAssets) {
         Write-Success "Sample assets included"
     }
     else {
-        Write-Warning "Source assets folder not found: $sourceAssetsPath"
+        Write-StepWarning "Source assets folder not found: $sourceAssetsPath"
     }
 }
 
@@ -353,7 +353,7 @@ try {
     Write-Host "  Size: $([math]::Round($zipSize, 2)) MB" -ForegroundColor Gray
 }
 catch {
-    Write-Error "Failed to create ZIP: $_"
+    Write-StepError "Failed to create ZIP: $_"
     exit 1
 }
 

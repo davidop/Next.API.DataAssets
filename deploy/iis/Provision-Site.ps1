@@ -72,12 +72,12 @@ function Write-Success {
     Write-Host "[OK] $Message" -ForegroundColor Green
 }
 
-function Write-Warning {
+function Write-StepWarning {
     param([string]$Message)
     Write-Host "[WARN] $Message" -ForegroundColor Yellow
 }
 
-function Write-Error {
+function Write-StepError {
     param([string]$Message)
     Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
@@ -85,7 +85,7 @@ function Write-Error {
 # Check if running as Administrator
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
-    Write-Error "This script must be run as Administrator"
+    Write-StepError "This script must be run as Administrator"
     exit 1
 }
 
@@ -155,7 +155,7 @@ try {
     Write-Success "NTFS permissions configured for '$appPoolIdentity'"
 }
 catch {
-    Write-Warning "Failed to set NTFS permissions: $_"
+    Write-StepWarning "Failed to set NTFS permissions: $_"
     Write-Host "  You may need to set permissions manually for: $appPoolIdentity" -ForegroundColor Yellow
 }
 
@@ -166,7 +166,7 @@ if ($UseDefaultWebSite) {
     # Check if Default Web Site exists
     $defaultSite = Get-Website -Name "Default Web Site" -ErrorAction SilentlyContinue
     if ($null -eq $defaultSite) {
-        Write-Error "Default Web Site not found. Use without -UseDefaultWebSite to create a standalone site."
+        Write-StepError "Default Web Site not found. Use without -UseDefaultWebSite to create a standalone site."
         exit 1
     }
     

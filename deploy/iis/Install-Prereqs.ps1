@@ -45,12 +45,12 @@ function Write-Success {
     Write-Host "[OK] $Message" -ForegroundColor Green
 }
 
-function Write-Warning {
+function Write-StepWarning {
     param([string]$Message)
     Write-Host "[WARN] $Message" -ForegroundColor Yellow
 }
 
-function Write-Error {
+function Write-StepError {
     param([string]$Message)
     Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
@@ -58,7 +58,7 @@ function Write-Error {
 # Check if running as Administrator
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
-    Write-Error "This script must be run as Administrator"
+    Write-StepError "This script must be run as Administrator"
     exit 1
 }
 
@@ -120,7 +120,7 @@ try {
     Write-Success "IIS features enabled successfully"
 }
 catch {
-    Write-Error "Failed to enable IIS features: $_"
+    Write-StepError "Failed to enable IIS features: $_"
     exit 1
 }
 
@@ -144,7 +144,7 @@ if ((Test-Path $ancmPath) -or (Test-Path $ancmInprocPath)) {
     }
 }
 else {
-    Write-Warning "ASP.NET Core Module (ANCM) is NOT installed"
+    Write-StepWarning "ASP.NET Core Module (ANCM) is NOT installed"
     Write-Host ""
     Write-Host "  You must install the .NET Hosting Bundle:" -ForegroundColor Yellow
     Write-Host "  - For .NET 8 (Windows Server 2012 R2+): https://dotnet.microsoft.com/download/dotnet/8.0" -ForegroundColor Yellow
@@ -164,7 +164,7 @@ if ($LASTEXITCODE -eq 0 -and $runtimes) {
     }
 }
 else {
-    Write-Warning ".NET CLI not found or no runtimes detected"
+    Write-StepWarning ".NET CLI not found or no runtimes detected"
 }
 
 # Step 4: IIS Reset
@@ -175,11 +175,11 @@ if (-not $SkipIISReset) {
         Write-Success "IIS reset completed successfully"
     }
     catch {
-        Write-Warning "IIS reset failed: $_"
+        Write-StepWarning "IIS reset failed: $_"
     }
 }
 else {
-    Write-Warning "Skipping IIS reset (use 'iisreset' command manually if needed)"
+    Write-StepWarning "Skipping IIS reset (use 'iisreset' command manually if needed)"
 }
 
 # Summary
