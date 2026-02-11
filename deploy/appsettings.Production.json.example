@@ -1,0 +1,57 @@
+{
+  "Assets": {
+    "RootPath": "assets",
+    "DefaultCacheSeconds": 600
+  },
+  "Health": {
+    "AllowAnonymous": false
+  },
+  "Auth": {
+    "Jwt": {
+      "Issuer": "your-company-name",
+      "Audience": "dataassets-api",
+      "SigningKey": "CHANGE-THIS-TO-A-SECURE-KEY-MINIMUM-32-CHARACTERS-LONG",
+      "ValidateIssuer": true,
+      "ValidateAudience": true,
+      "ClockSkewSeconds": 30
+    },
+    "ApiKeysOptions": {
+      "HeaderName": "X-API-Key",
+      "Keys": [
+        {
+          "KeyId": "production-client-1",
+          "Owner": "Production Client 1",
+          "KeyHash": "replace-with-sha256-hash-of-your-api-key",
+          "Enabled": true
+        }
+      ]
+    }
+  },
+  "RateLimiting": {
+    "IpRateLimitOptions": {
+      "EnableEndpointRateLimiting": true,
+      "StackBlockedRequests": false,
+      "RealIpHeader": "X-Real-IP",
+      "ClientIdHeader": "X-ClientId",
+      "HttpStatusCode": 429,
+      "GeneralRules": [
+        {
+          "Endpoint": "*:/resources/*",
+          "Period": "1m",
+          "Limit": 60
+        }
+      ]
+    },
+    "IpRateLimitPolicies": {
+      "IpRules": []
+    }
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.AspNetCore.Hosting.Diagnostics": "Information"
+    }
+  },
+  "AllowedHosts": "*"
+}
