@@ -31,7 +31,7 @@ jobs:
         run: dotnet test Next.API.DataAssets.sln -c Release --no-build --logger "trx;LogFileName=test_results.trx"
 
       - name: Publish (artifact)
-        run: dotnet publish src/Next.API.DataAssets/Next.API.DataAssets.csproj -c Release -o out/publish
+        run: dotnet publish src/Next.API.DataAssets/Next.API.DataAssets.csproj -c Release -f net10.0 -o out/publish
 
       - name: Upload artifact (publish)
         uses: actions/upload-artifact@v4
