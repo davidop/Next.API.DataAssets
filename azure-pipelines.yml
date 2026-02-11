@@ -9,7 +9,7 @@ pool:
 
 variables:
   BuildConfiguration: 'Release'
-  DotNetVersion: '8.x'
+  DotNetVersion: '10.x'
 
 stages:
 - stage: BuildAndTest
