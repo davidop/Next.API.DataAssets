@@ -8,38 +8,11 @@ API de entrega de ficheros (data assets) protegida por **JWT** o **API Key** (OR
 
 ### Requisitos del sistema
 
-| .NET Version | Windows Server Mínimo | Estado | Notas |
-|--------------|----------------------|--------|-------|
-| .NET 10.0 | Windows Server 2016+ | ✅ Recomendado | Versión actual del proyecto |
-| .NET 8.0 (LTS) | Windows Server 2016+ | ✅ Compatible | Soporte a largo plazo hasta Noviembre 2026 |
+| .NET Version | Windows Server Mínimo | Notas |
+|--------------|----------------------|-------|
+| .NET 10.0 | Windows Server 2016+ | Versión actual del proyecto |
 
-**Windows Server 2012/R2** alcanzó el fin de soporte en Octubre 2023 y **NO es compatible** con .NET 6+ (Core/moderno).
 
-### Si necesitas Windows Server 2012
-
-Si tu servidor es Windows Server 2012, tienes estas opciones:
-1. **Recomendado**: Actualizar a Windows Server 2016 o superior
-2. Usar .NET Framework 4.8 (requeriría reescribir la aplicación)
-3. Usar .NET Core 3.1 (fin de vida, no recomendado)
-
-### Cambiar de .NET 10 a .NET 8 (LTS)
-
-Para usar .NET 8.0 en lugar de .NET 10, edita los archivos `.csproj`:
-
-```xml
-<!-- Cambiar de: -->
-<TargetFramework>net10.0</TargetFramework>
-
-<!-- A: -->
-<TargetFramework>net8.0</TargetFramework>
-```
-
-Archivos a modificar:
-- `src/Next.API.DataAssets/Next.API.DataAssets.csproj`
-- `tests/Next.API.DataAssets.IntegrationTests/Next.API.DataAssets.IntegrationTests.csproj`
-- `tests/Next.API.DataAssets.UnitTests/Next.API.DataAssets.UnitTests.csproj`
-
-También actualiza las referencias de paquetes a versiones 8.x en lugar de 10.x.
 
 ## Funcionalidad
 
@@ -161,7 +134,6 @@ El ETag se recalcula automáticamente basándose en la fecha de modificación y 
 
 1. **ASP.NET Core Hosting Bundle** para tu versión de .NET:
    - [.NET 10 Hosting Bundle](https://dotnet.microsoft.com/download/dotnet/10.0) (requiere Windows Server 2016+)
-   - [.NET 8 Hosting Bundle](https://dotnet.microsoft.com/download/dotnet/8.0) (requiere Windows Server 2016+)
 
 2. **IIS** con módulo de reescritura de URL (opcional pero recomendado)
 
@@ -304,16 +276,7 @@ Next.API.DataAssets/
 └── README.md
 ```
 
-## Migración Futura
 
-Para migrar a .NET 10 cuando el servidor se actualice:
-
-1. Cambiar `<TargetFramework>net8.0</TargetFramework>` a `net10.0` en los `.csproj`
-2. Actualizar referencias de paquetes a versiones 10.x
-3. Instalar .NET 10 Hosting Bundle en el servidor
-4. Republicar la aplicación
-
-**No se requieren cambios de código** - la aplicación es compatible hacia adelante.
 
 ## Licencia
 
