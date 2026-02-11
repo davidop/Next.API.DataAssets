@@ -4,13 +4,21 @@ API de entrega de ficheros (data assets) protegida por **JWT** o **API Key** (OR
 
 ## ⚠️ Compatibilidad con Windows Server
 
-**IMPORTANTE**: Este proyecto utiliza **.NET 10** que requiere **Windows Server 2016 o superior**.
+Este proyecto soporta múltiples versiones de .NET para máxima compatibilidad:
 
-### Requisitos del sistema
+### Matriz de Compatibilidad
 
-| .NET Version | Windows Server Mínimo | Notas |
-|--------------|----------------------|-------|
-| .NET 10.0 | Windows Server 2016+ | Versión actual del proyecto |
+| Framework | Windows Server Mínimo | Estado | Notas |
+|-----------|----------------------|--------|-------|
+| .NET 10.0 | Windows Server 2016+ | ✅ Recomendado | Versión principal del proyecto |
+| .NET 8.0 | Windows Server 2012 R2+ | ✅ LTS | Compatibilidad legacy, requiere ESU en 2012 R2 |
+
+### Guías de Despliegue
+
+- **Windows Server 2012 R2**: Ver [DEPLOYMENT-WindowsServer2012R2.md](DEPLOYMENT-WindowsServer2012R2.md) para instrucciones detalladas
+- **Windows Server 2016+**: Compatible con ambos frameworks (net10.0 o net8.0)
+
+> **Nota sobre Windows Server 2012 R2**: Esta versión de Windows alcanzó el fin de soporte estándar. Se recomienda Extended Security Updates (ESU) para uso en producción.
 
 
 
@@ -130,47 +138,100 @@ El ETag se recalcula automáticamente basándose en la fecha de modificación y 
 
 ## Despliegue en IIS (Windows)
 
+### Opciones de Despliegue
+
+#### Opción A: Scripts Automatizados (Recomendado)
+
+El repositorio incluye scripts PowerShell en `deploy/iis/` para automatizar el despliegue:
+
+1. **Install-Prereqs.ps1** - Habilita IIS y verifica ANCM
+2. **Provision-Site.ps1** - Crea App Pool y sitio IIS
+3. **Publish-And-Zip.ps1** - Publica y empaqueta la aplicación
+
+```powershell
+# Paso 1: Prerrequisitos (ejecutar como Administrador)
+cd deploy\iis
+.\Install-Prereqs.ps1
+
+# Paso 2: Crear sitio IIS
+.\Provision-Site.ps1
+
+# Paso 3: Publicar aplicación (desde la raíz del repo)
+.\Publish-And-Zip.ps1 -Framework net8.0
+```
+
+#### Opción B: Despliegue Manual
+
+Ver la guía detallada: [DEPLOYMENT-WindowsServer2012R2.md](DEPLOYMENT-WindowsServer2012R2.md)
+
 ### Prerrequisitos
 
 1. **ASP.NET Core Hosting Bundle** para tu versión de .NET:
-   - [.NET 10 Hosting Bundle](https://dotnet.microsoft.com/download/dotnet/10.0) (requiere Windows Server 2016+)
+   - [.NET 8 Hosting Bundle](https://dotnet.microsoft.com/download/dotnet/8.0) (Windows Server 2012 R2+)
+   - [.NET 10 Hosting Bundle](https://dotnet.microsoft.com/download/dotnet/10.0) (Windows Server 2016+)
 
-2. **IIS** con módulo de reescritura de URL (opcional pero recomendado)
+2. **IIS** con características requeridas (ver scripts o guía de despliegue)
 
-### Pasos de despliegue
+### Publicación Manual
 
-1. **Publicar la aplicación**:
-```bash
-dotnet publish src/Next.API.DataAssets/Next.API.DataAssets.csproj \
-  -c Release \
+Para .NET 8 (compatible con Windows Server 2012 R2):
+```powershell
+dotnet publish src/Next.API.DataAssets/Next.API.DataAssets.csproj `
+  -c Release `
+  -f net8.0 `
+  -r win-x64 `
+  --self-contained false `
   -o C:\inetpub\dataassets
 ```
 
-2. **Copiar assets**:
-```bash
-# Crear carpeta de assets
-mkdir C:\inetpub\dataassets\assets
-
-# Copiar tu CSV
-copy tu-archivo.csv C:\inetpub\dataassets\assets\DataAsset.csv
+Para .NET 10 (Windows Server 2016+):
+```powershell
+dotnet publish src/Next.API.DataAssets/Next.API.DataAssets.csproj `
+  -c Release `
+  -f net10.0 `
+  -r win-x64 `
+  --self-contained false `
+  -o C:\inetpub\dataassets
 ```
 
-3. **Configurar IIS**:
-   - Crear Application Pool (.NET CLR Version: **No Managed Code**)
-   - Crear sitio web o aplicación apuntando a `C:\inetpub\dataassets`
-   - Copiar `deploy/web.config` a la carpeta de publicación (si no existe)
+### Configuración IIS
 
-4. **Configurar producción**:
-   - Editar `appsettings.json` o usar variables de entorno
-   - Cambiar `Auth:Jwt:SigningKey` a valor seguro
-   - Habilitar `ValidateIssuer` y `ValidateAudience`
-   - Configurar API Keys reales
+1. **Application Pool**:
+   - .NET CLR Version: **No Managed Code**
+   - Identity: **ApplicationPoolIdentity**
+   - Enable 32-bit Applications: **False**
 
-5. **Verificar**:
-```bash
-curl http://localhost/health
-# Debe devolver: {"status":"ok"}
+2. **Sitio Web**:
+   - Apuntar a la carpeta de publicación
+   - Asignar el Application Pool creado
+   - Copiar `deploy/web.config` si no existe
+
+3. **Permisos NTFS**:
+   - La identidad del App Pool necesita permisos de lectura/ejecución en la carpeta
+   - Permisos de escritura en la carpeta `logs`
+
+### Configurar producción
+
+- Editar `appsettings.json` o usar variables de entorno en `web.config`
+- Cambiar `Auth:Jwt:SigningKey` a valor seguro
+- Habilitar `ValidateIssuer` y `ValidateAudience`
+- Configurar API Keys reales
+
+### Verificar Despliegue
+
+El API incluye dos endpoints de health check:
+
+```powershell
+# Health check básico (siempre anónimo)
+Invoke-WebRequest http://localhost/health
+# Respuesta: {"status":"ok"}
+
+# Health check detallado (configurable)
+Invoke-WebRequest http://localhost/healthz
+# Respuesta: {"status":"healthy","timestamp":"2024-02-11T22:00:00Z","version":"1.0.0","framework":"8.0.11","environment":"Production"}
 ```
+
+> **Nota**: El endpoint `/healthz` puede configurarse para requerir autenticación mediante `Health:AllowAnonymous` en `appsettings.json`.
 
 ### web.config
 

@@ -111,6 +111,33 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
    .WithTags("Health")
    .AllowAnonymous();
 
+// Enhanced health endpoint with version info
+// Authorization is configurable via Health:AllowAnonymous setting
+var healthAllowAnonymous = builder.Configuration.GetValue<bool>("Health:AllowAnonymous", true);
+var healthzEndpoint = app.MapGet("/healthz", (IConfiguration config) =>
+{
+    var response = new
+    {
+        status = "healthy",
+        timestamp = DateTime.UtcNow,
+        version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "1.0.0",
+        framework = Environment.Version.ToString(),
+        environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown"
+    };
+    return Results.Ok(response);
+})
+   .WithTags("Health")
+   .WithName("HealthCheckDetailed");
+
+if (healthAllowAnonymous)
+{
+    healthzEndpoint.AllowAnonymous();
+}
+else
+{
+    healthzEndpoint.RequireAuthorization();
+}
+
 app.MapGet("/resources/{filename}", async (
         string filename,
         bool? download,
