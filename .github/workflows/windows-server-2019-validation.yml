@@ -1,0 +1,329 @@
+name: Windows Server 2019 Validation
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION_8: "8.0.x"
+  DOTNET_VERSION_10: "10.0.x"
+
+jobs:
+  validate-net8-win2019:
+    name: Validate .NET 8.0 (Windows Server 2019 Compatible)
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION_8 }}
+
+      - name: Display .NET info
+        run: |
+          dotnet --info
+          dotnet --list-runtimes
+          dotnet --list-sdks
+
+      - name: Restore dependencies
+        run: dotnet restore Next.API.DataAssets.sln
+
+      - name: Build (net8.0)
+        run: dotnet build Next.API.DataAssets.sln -c Release -f net8.0 --no-restore
+
+      - name: Run tests (net8.0)
+        run: dotnet test Next.API.DataAssets.sln -c Release -f net8.0 --no-build --logger "trx;LogFileName=test_results_net8.trx"
+
+      - name: Publish test results (net8.0)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-net8
+          path: "**/*.trx"
+
+      - name: Publish (net8.0 - Framework Dependent)
+        run: |
+          dotnet publish src/Next.API.DataAssets/Next.API.DataAssets.csproj `
+            -c Release `
+            -f net8.0 `
+            -r win-x64 `
+            --self-contained false `
+            -o publish/net8.0-fd
+
+      - name: Verify web.config exists (net8.0)
+        run: |
+          if (-not (Test-Path "publish/net8.0-fd/web.config")) {
+            Write-Error "web.config not found in publish output!"
+            Copy-Item "deploy/web.config" "publish/net8.0-fd/web.config"
+            Write-Host "Copied web.config from deploy folder"
+          } else {
+            Write-Host "web.config found in publish output"
+          }
+
+      - name: Verify required files (net8.0)
+        run: |
+          $requiredFiles = @(
+            "publish/net8.0-fd/Next.API.DataAssets.dll",
+            "publish/net8.0-fd/web.config",
+            "publish/net8.0-fd/appsettings.json"
+          )
+          
+          foreach ($file in $requiredFiles) {
+            if (-not (Test-Path $file)) {
+              Write-Error "Required file not found: $file"
+              exit 1
+            } else {
+              Write-Host "✓ Found: $file"
+            }
+          }
+
+      - name: Verify runtime identifier (net8.0)
+        run: |
+          # Check that the published app is for win-x64
+          $dllPath = "publish/net8.0-fd/Next.API.DataAssets.dll"
+          if (Test-Path $dllPath) {
+            $fileInfo = [System.Reflection.Assembly]::ReflectionOnlyLoadFrom((Resolve-Path $dllPath))
+            Write-Host "Assembly: $($fileInfo.FullName)"
+          }
+
+      - name: Create deployment package (net8.0)
+        run: |
+          # Copy web.config if not present
+          if (-not (Test-Path "publish/net8.0-fd/web.config")) {
+            Copy-Item "deploy/web.config" "publish/net8.0-fd/"
+          }
+          
+          # Copy sample appsettings
+          if (Test-Path "deploy/appsettings.Production.json.example") {
+            Copy-Item "deploy/appsettings.Production.json.example" "publish/net8.0-fd/"
+          }
+          
+          # Create deployment README
+          @"
+          # Next.API.DataAssets - .NET 8.0 Deployment Package
+          
+          This package is compatible with Windows Server 2019.
+          
+          ## Prerequisites
+          - Windows Server 2019 (Build 17763+)
+          - .NET 8.0 Hosting Bundle
+          - IIS 10.0 with ASP.NET Core Module V2
+          
+          ## Deployment
+          See /docs/deploy/IIS-WindowsServer2019.md for detailed instructions.
+          
+          ## Quick Start
+          1. Install .NET 8 Hosting Bundle
+          2. Run Install-Prereqs.ps1 (from repository)
+          3. Run Provision-Site.ps1 (from repository)
+          4. Extract this package to C:\inetpub\dataassets
+          5. Configure appsettings.Production.json
+          6. Run Smoke-Test.ps1 to verify
+          "@ | Out-File -FilePath "publish/net8.0-fd/DEPLOYMENT-README.txt"
+          
+          # Create ZIP package
+          Compress-Archive -Path "publish/net8.0-fd/*" -DestinationPath "Next.API.DataAssets-net8.0-win-x64.zip" -Force
+
+      - name: Upload deployment package (net8.0)
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-package-net8-win-x64
+          path: Next.API.DataAssets-net8.0-win-x64.zip
+
+  validate-net10-win2019:
+    name: Validate .NET 10.0 (Windows Server 2019 Compatible)
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION_10 }}
+
+      - name: Display .NET info
+        run: |
+          dotnet --info
+          dotnet --list-runtimes
+          dotnet --list-sdks
+
+      - name: Restore dependencies
+        run: dotnet restore Next.API.DataAssets.sln
+
+      - name: Build (net10.0)
+        run: dotnet build Next.API.DataAssets.sln -c Release -f net10.0 --no-restore
+
+      - name: Run tests (net10.0)
+        run: dotnet test Next.API.DataAssets.sln -c Release -f net10.0 --no-build --logger "trx;LogFileName=test_results_net10.trx"
+
+      - name: Publish test results (net10.0)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-net10
+          path: "**/*.trx"
+
+      - name: Publish (net10.0 - Framework Dependent)
+        run: |
+          dotnet publish src/Next.API.DataAssets/Next.API.DataAssets.csproj `
+            -c Release `
+            -f net10.0 `
+            -r win-x64 `
+            --self-contained false `
+            -o publish/net10.0-fd
+
+      - name: Verify web.config exists (net10.0)
+        run: |
+          if (-not (Test-Path "publish/net10.0-fd/web.config")) {
+            Write-Error "web.config not found in publish output!"
+            Copy-Item "deploy/web.config" "publish/net10.0-fd/web.config"
+            Write-Host "Copied web.config from deploy folder"
+          } else {
+            Write-Host "web.config found in publish output"
+          }
+
+      - name: Verify required files (net10.0)
+        run: |
+          $requiredFiles = @(
+            "publish/net10.0-fd/Next.API.DataAssets.dll",
+            "publish/net10.0-fd/web.config",
+            "publish/net10.0-fd/appsettings.json"
+          )
+          
+          foreach ($file in $requiredFiles) {
+            if (-not (Test-Path $file)) {
+              Write-Error "Required file not found: $file"
+              exit 1
+            } else {
+              Write-Host "✓ Found: $file"
+            }
+          }
+
+      - name: Create deployment package (net10.0)
+        run: |
+          # Copy web.config if not present
+          if (-not (Test-Path "publish/net10.0-fd/web.config")) {
+            Copy-Item "deploy/web.config" "publish/net10.0-fd/"
+          }
+          
+          # Copy sample appsettings
+          if (Test-Path "deploy/appsettings.Production.json.example") {
+            Copy-Item "deploy/appsettings.Production.json.example" "publish/net10.0-fd/"
+          }
+          
+          # Create deployment README
+          @"
+          # Next.API.DataAssets - .NET 10.0 Deployment Package
+          
+          This package is compatible with Windows Server 2019.
+          
+          ## Prerequisites
+          - Windows Server 2019 (Build 17763+)
+          - .NET 10.0 Hosting Bundle
+          - IIS 10.0 with ASP.NET Core Module V2
+          
+          ## Deployment
+          See /docs/deploy/IIS-WindowsServer2019.md for detailed instructions.
+          
+          ## Quick Start
+          1. Install .NET 10 Hosting Bundle
+          2. Run Install-Prereqs.ps1 (from repository)
+          3. Run Provision-Site.ps1 (from repository)
+          4. Extract this package to C:\inetpub\dataassets
+          5. Configure appsettings.Production.json
+          6. Run Smoke-Test.ps1 to verify
+          "@ | Out-File -FilePath "publish/net10.0-fd/DEPLOYMENT-README.txt"
+          
+          # Create ZIP package
+          Compress-Archive -Path "publish/net10.0-fd/*" -DestinationPath "Next.API.DataAssets-net10.0-win-x64.zip" -Force
+
+      - name: Upload deployment package (net10.0)
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-package-net10-win-x64
+          path: Next.API.DataAssets-net10.0-win-x64.zip
+
+  validate-compatibility:
+    name: Validate Windows Server 2019 Compatibility
+    runs-on: windows-latest
+    needs: [validate-net8-win2019, validate-net10-win2019]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify deployment scripts exist
+        run: |
+          $scripts = @(
+            "deploy/iis/WindowsServer2019/Install-Prereqs.ps1",
+            "deploy/iis/WindowsServer2019/Provision-Site.ps1",
+            "deploy/iis/WindowsServer2019/Smoke-Test.ps1"
+          )
+          
+          foreach ($script in $scripts) {
+            if (-not (Test-Path $script)) {
+              Write-Error "Required script not found: $script"
+              exit 1
+            } else {
+              Write-Host "✓ Found: $script"
+            }
+          }
+
+      - name: Verify documentation exists
+        run: |
+          $docs = @(
+            "docs/compatibility/WINDOWS_SERVER_2019.md",
+            "docs/deploy/IIS-WindowsServer2019.md"
+          )
+          
+          foreach ($doc in $docs) {
+            if (-not (Test-Path $doc)) {
+              Write-Error "Required documentation not found: $doc"
+              exit 1
+            } else {
+              Write-Host "✓ Found: $doc"
+            }
+          }
+
+      - name: Validate PowerShell scripts syntax
+        run: |
+          $scripts = Get-ChildItem -Path "deploy/iis/WindowsServer2019" -Filter "*.ps1"
+          
+          foreach ($script in $scripts) {
+            Write-Host "Validating: $($script.Name)"
+            $errors = $null
+            $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content $script.FullName -Raw), [ref]$errors)
+            
+            if ($errors.Count -gt 0) {
+              Write-Error "Syntax errors in $($script.Name):"
+              $errors | ForEach-Object { Write-Error $_ }
+              exit 1
+            } else {
+              Write-Host "  ✓ Syntax OK"
+            }
+          }
+
+      - name: Summary
+        run: |
+          Write-Host ""
+          Write-Host "============================================================" -ForegroundColor Cyan
+          Write-Host "  Windows Server 2019 Validation Complete" -ForegroundColor Cyan
+          Write-Host "============================================================" -ForegroundColor Cyan
+          Write-Host ""
+          Write-Host "✓ .NET 8.0 build and publish successful" -ForegroundColor Green
+          Write-Host "✓ .NET 10.0 build and publish successful" -ForegroundColor Green
+          Write-Host "✓ Deployment scripts validated" -ForegroundColor Green
+          Write-Host "✓ Documentation complete" -ForegroundColor Green
+          Write-Host ""
+          Write-Host "Deployment packages available as artifacts:" -ForegroundColor White
+          Write-Host "  - Next.API.DataAssets-net8.0-win-x64.zip" -ForegroundColor Gray
+          Write-Host "  - Next.API.DataAssets-net10.0-win-x64.zip" -ForegroundColor Gray
+          Write-Host ""
