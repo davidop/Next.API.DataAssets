@@ -7,6 +7,9 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   DOTNET_VERSION_8: "8.0.x"
   DOTNET_VERSION_10: "10.0.x"
@@ -15,6 +18,8 @@ jobs:
   validate-net8-win2019:
     name: Validate .NET 8.0 (Windows Server 2019 Compatible)
     runs-on: windows-latest
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout
@@ -139,6 +144,8 @@ jobs:
   validate-net10-win2019:
     name: Validate .NET 10.0 (Windows Server 2019 Compatible)
     runs-on: windows-latest
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout
@@ -255,6 +262,8 @@ jobs:
     name: Validate Windows Server 2019 Compatibility
     runs-on: windows-latest
     needs: [validate-net8-win2019, validate-net10-win2019]
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout

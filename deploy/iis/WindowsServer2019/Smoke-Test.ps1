@@ -88,7 +88,7 @@ Write-Host "  Next.API.DataAssets - Smoke Test (Windows Server 2019)" -Foregroun
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Target URL: $Url" -ForegroundColor White
-Write-Host "Timestamp:  $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Gray
+Write-Host "Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Gray
 Write-Host ""
 
 $testsPassed = 0
