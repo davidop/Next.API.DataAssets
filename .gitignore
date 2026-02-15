@@ -10,4 +10,5 @@ TestResults/
 artifacts/
 deploy/logs/
 publish/
+out/
 *.zip

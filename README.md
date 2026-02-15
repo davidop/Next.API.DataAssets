@@ -13,10 +13,28 @@ Este proyecto soporta múltiples versiones de .NET para máxima compatibilidad:
 | .NET 10.0 | Windows Server 2016+ | ✅ Recomendado | Versión principal del proyecto |
 | .NET 8.0 | Windows Server 2012 R2+ | ✅ LTS | Compatibilidad legacy, requiere ESU en 2012 R2 |
 
+### Versiones de Windows Server Soportadas
+
+| Windows Server | .NET 8.0 | .NET 10.0 | IIS InProcess | IIS OutOfProcess | Kestrel | Estado |
+|----------------|----------|-----------|---------------|------------------|---------|--------|
+| **2012 R2** | ✅ | ❌ | ✅ | ✅ | ✅ | Legacy (requiere ESU) |
+| **2016** | ✅ | ✅ | ✅ | ✅ | ✅ | Soportado |
+| **2019** | ✅ | ✅ | ✅ | ✅ | ✅ | ⭐ Recomendado |
+| **2022** | ✅ | ✅ | ✅ | ✅ | ✅ | Soportado |
+
 ### Guías de Despliegue
 
-- **Windows Server 2012 R2**: Ver [DEPLOYMENT-WindowsServer2012R2.md](DEPLOYMENT-WindowsServer2012R2.md) para instrucciones detalladas
-- **Windows Server 2016+**: Compatible con ambos frameworks (net10.0 o net8.0)
+- **Windows Server 2012 R2**: Ver [DEPLOYMENT-WindowsServer2012R2.md](DEPLOYMENT-WindowsServer2012R2.md)
+- **Windows Server 2019**: Ver [docs/deploy/IIS-WindowsServer2019.md](docs/deploy/IIS-WindowsServer2019.md) ⭐ Recomendado
+- **Windows Server 2016/2022**: Compatibles con ambos frameworks, usar guía de Windows Server 2019
+
+### Documentación Adicional
+
+- **Compatibilidad Windows Server 2019**: [docs/compatibility/WINDOWS_SERVER_2019.md](docs/compatibility/WINDOWS_SERVER_2019.md)
+  - Análisis de compatibilidad detallado
+  - Matriz de opciones de hosting (IIS InProcess/OutOfProcess, Framework-dependent/Self-contained)
+  - Requisitos mínimos y limitaciones conocidas
+  - Guía de troubleshooting
 
 > **Nota sobre Windows Server 2012 R2**: Esta versión de Windows alcanzó el fin de soporte estándar. Se recomienda Extended Security Updates (ESU) para uso en producción.
 
