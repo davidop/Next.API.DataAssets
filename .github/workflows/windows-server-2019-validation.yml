@@ -93,7 +93,7 @@ jobs:
           # Check that the published app is for win-x64
           $dllPath = "publish/net8.0-fd/Next.API.DataAssets.dll"
           if (Test-Path $dllPath) {
-            $fileInfo = [System.Reflection.Assembly]::ReflectionOnlyLoadFrom((Resolve-Path $dllPath))
+            $fileInfo = [System.Reflection.Assembly]::LoadFrom((Resolve-Path $dllPath))
             Write-Host "Assembly: $($fileInfo.FullName)"
           }
 
