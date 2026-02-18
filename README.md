@@ -138,6 +138,36 @@ $hash = [System.Security.Cryptography.SHA256]::Create().ComputeHash($bytes)
 -join ($hash | ForEach-Object { $_.ToString("x2") })
 ```
 
+**O usa el script incluido**:
+```powershell
+.\Generate-ApiKey.ps1 -KeyId "cliente-xyz" -Owner "Nombre del Cliente"
+```
+
+### 🚀 Guías de Configuración Rápida
+
+Hemos creado guías específicas para diferentes escenarios de despliegue:
+
+#### Para IIS Windows Server
+- **[IIS_QUICKSTART.md](IIS_QUICKSTART.md)** - ⚡ Guía rápida (3 opciones)
+- **[IIS_APPSETTINGS_GUIDE.md](IIS_APPSETTINGS_GUIDE.md)** - 📖 Guía completa
+- **[Configure-IIS-ApiKey.ps1](Configure-IIS-ApiKey.ps1)** - 🤖 Script de configuración automática
+
+```powershell
+# Configuración automática en IIS
+.\Configure-IIS-ApiKey.ps1 -AppPoolName "DataAssetsAppPool" -SitePath "C:\inetpub\dataassets"
+```
+
+#### Para Azure App Service
+- **[AZURE_API_KEY_SETUP.md](AZURE_API_KEY_SETUP.md)** - Configuración en Azure
+- **[Test-AzureEndpoint.ps1](Test-AzureEndpoint.ps1)** - Script de testing
+
+#### Para Testing con Postman
+- **[POSTMAN_QUICKSTART.md](POSTMAN_QUICKSTART.md)** - Guía de testing con Postman
+
+#### Plantillas de Configuración
+- **[deploy/web.config.example](deploy/web.config.example)** - web.config ya configurado
+- **[deploy/appsettings.Production.json.example](deploy/appsettings.Production.json.example)** - Plantilla de producción
+
 ## Almacenamiento de ficheros
 
 - **Ubicación**: Por defecto, carpeta `assets/` (relativa al ejecutable)

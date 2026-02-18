@@ -1,30 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <!--
-    IIS Configuration for Next.API.DataAssets
+    ============================================================================
+    EJEMPLO COMPLETO de web.config con API Key CONFIGURADA
+    ============================================================================
     
-    HOSTING MODELS:
+    Este es un ejemplo listo para usar con la API Key:
+    AGdJ4tivFc0Ljzh3ebMQ5gXZkDnfulSH
     
-    1. InProcess (RECOMMENDED for Windows Server 2019+):
-       - Best performance (~30% faster than OutOfProcess)
-       - Runs inside IIS worker process
-       - Change hostingModel="inprocess" below
+    INSTRUCCIONES:
+    1. Copia este archivo a tu servidor IIS como "web.config"
+    2. Ajusta las rutas y configuraciones según necesites
+    3. Reinicia el Application Pool: Restart-WebAppPool -Name "DataAssetsAppPool"
+    4. Testea con Postman usando el header: X-API-Key: AGdJ4tivFc0Ljzh3ebMQ5gXZkDnfulSH
     
-    2. OutOfProcess (RECOMMENDED for Windows Server 2012 R2):
-       - Maximum compatibility
-       - Runs as separate Kestrel process
-       - Better isolation for debugging
-       - Currently configured below
-    
-    REQUIREMENTS:
-    - ASP.NET Core Runtime + Hosting Bundle installed
-    - For net8.0: .NET 8.0 Hosting Bundle
-    - For net10.0: .NET 10.0 Hosting Bundle (Windows Server 2016+ only)
-    
-    TROUBLESHOOTING:
-    - Enable stdout logging: Set stdoutLogEnabled="true"
-    - Logs location: .\logs\stdout_*.log
-    - Check Event Viewer > Application logs for errors
+    ============================================================================
   -->
   <system.webServer>
     <handlers>
@@ -32,106 +22,81 @@
     </handlers>
     
     <!-- 
-      OPTION 1: OutOfProcess (Default - Maximum Compatibility)
-      Recommended for Windows Server 2012 R2
+      HOSTING MODEL:
+      - outofprocess: Máxima compatibilidad (Windows Server 2012 R2+)
+      - inprocess: Mejor rendimiento (Windows Server 2019+)
     -->
     <aspNetCore processPath="dotnet" 
                 arguments="Next.API.DataAssets.dll" 
                 stdoutLogEnabled="false" 
                 stdoutLogFile=".\logs\stdout" 
                 hostingModel="outofprocess">
+      
       <environmentVariables>
         <!-- ============================================================ -->
-        <!-- ENVIRONMENT CONFIGURATION                                    -->
+        <!-- ENVIRONMENT                                                  -->
         <!-- ============================================================ -->
         <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" />
         
         <!-- ============================================================ -->
-        <!-- ASSETS CONFIGURATION (Optional - defaults from appsettings) -->
+        <!-- ASSETS CONFIGURATION                                         -->
         <!-- ============================================================ -->
-        <!-- 
         <environmentVariable name="Assets__RootPath" value="assets" />
         <environmentVariable name="Assets__DefaultCacheSeconds" value="600" />
-        -->
         
         <!-- ============================================================ -->
-        <!-- AUTHENTICATION - API KEYS (Recommended: Configure here)     -->
+        <!-- HEALTH CHECK                                                 -->
         <!-- ============================================================ -->
-        <!-- 
-        IMPORTANT: Uncomment and configure API Keys below
+        <environmentVariable name="Health__AllowAnonymous" value="false" />
         
-        1. Generate API Key using: .\Generate-ApiKey.ps1
-        2. Save the API Key securely (give to clients)
-        3. Configure the SHA-256 Hash below (NOT the raw key)
-        
-        Example configuration:
-        -->
-        <!--
+        <!-- ============================================================ -->
+        <!-- API KEY AUTHENTICATION                                       -->
+        <!-- ============================================================ -->
         <environmentVariable name="Auth__ApiKeysOptions__HeaderName" value="X-API-Key" />
         
-        API Key #1
+        <!-- API Key #1: Production Client 1 -->
+        <!-- Raw Key: AGdJ4tivFc0Ljzh3ebMQ5gXZkDnfulSH (Give this to client) -->
         <environmentVariable name="Auth__ApiKeysOptions__Keys__0__KeyId" value="production-client-1" />
         <environmentVariable name="Auth__ApiKeysOptions__Keys__0__Owner" value="Production Client 1" />
-        <environmentVariable name="Auth__ApiKeysOptions__Keys__0__KeyHash" value="replace-with-sha256-hash-of-your-api-key" />
+        <environmentVariable name="Auth__ApiKeysOptions__Keys__0__KeyHash" value="f34270a335b52d33de7c3b04da14f2fb1ffee7e1c10247984287ebe4e9e364ab" />
         <environmentVariable name="Auth__ApiKeysOptions__Keys__0__Enabled" value="true" />
         
-        API Key #2 (Multiple clients example)
+        <!-- API Key #2: Example for multiple clients -->
+        <!-- Generate new keys with: .\Generate-ApiKey.ps1 -->
+        <!--
         <environmentVariable name="Auth__ApiKeysOptions__Keys__1__KeyId" value="production-client-2" />
         <environmentVariable name="Auth__ApiKeysOptions__Keys__1__Owner" value="Production Client 2" />
-        <environmentVariable name="Auth__ApiKeysOptions__Keys__1__KeyHash" value="another-sha256-hash-here" />
+        <environmentVariable name="Auth__ApiKeysOptions__Keys__1__KeyHash" value="your-second-client-hash-here" />
         <environmentVariable name="Auth__ApiKeysOptions__Keys__1__Enabled" value="true" />
         -->
         
         <!-- ============================================================ -->
-        <!-- AUTHENTICATION - JWT (Optional if using JWT)                -->
+        <!-- JWT AUTHENTICATION (Optional)                                -->
         <!-- ============================================================ -->
-        <!--
         <environmentVariable name="Auth__Jwt__Issuer" value="your-company-name" />
         <environmentVariable name="Auth__Jwt__Audience" value="dataassets-api" />
         <environmentVariable name="Auth__Jwt__SigningKey" value="CHANGE-THIS-TO-A-SECURE-KEY-MINIMUM-32-CHARACTERS-LONG" />
         <environmentVariable name="Auth__Jwt__ValidateIssuer" value="true" />
         <environmentVariable name="Auth__Jwt__ValidateAudience" value="true" />
         <environmentVariable name="Auth__Jwt__ClockSkewSeconds" value="30" />
-        -->
         
         <!-- ============================================================ -->
-        <!-- RATE LIMITING (Optional - defaults from appsettings)        -->
+        <!-- RATE LIMITING                                                -->
         <!-- ============================================================ -->
-        <!--
         <environmentVariable name="RateLimiting__IpRateLimitOptions__EnableEndpointRateLimiting" value="true" />
+        <environmentVariable name="RateLimiting__IpRateLimitOptions__StackBlockedRequests" value="false" />
+        <environmentVariable name="RateLimiting__IpRateLimitOptions__RealIpHeader" value="X-Real-IP" />
+        <environmentVariable name="RateLimiting__IpRateLimitOptions__ClientIdHeader" value="X-ClientId" />
         <environmentVariable name="RateLimiting__IpRateLimitOptions__HttpStatusCode" value="429" />
+        
+        <!-- Rate Limit Rules -->
         <environmentVariable name="RateLimiting__IpRateLimitOptions__GeneralRules__0__Endpoint" value="*:/resources/*" />
         <environmentVariable name="RateLimiting__IpRateLimitOptions__GeneralRules__0__Period" value="1m" />
         <environmentVariable name="RateLimiting__IpRateLimitOptions__GeneralRules__0__Limit" value="60" />
-        -->
-        
-        <!-- ============================================================ -->
-        <!-- HEALTH CHECK (Optional - defaults from appsettings)         -->
-        <!-- ============================================================ -->
-        <!--
-        <environmentVariable name="Health__AllowAnonymous" value="false" />
-        -->
         
       </environmentVariables>
-    </aspNetCore>
-    
-    <!--
-      OPTION 2: InProcess (Recommended for Windows Server 2019+)
-      Better performance, runs inside IIS process
       
-      To use this option, comment out the OutOfProcess configuration above
-      and uncomment the InProcess configuration below:
-    
-    <aspNetCore processPath="dotnet" 
-                arguments="Next.API.DataAssets.dll" 
-                stdoutLogEnabled="false" 
-                stdoutLogFile=".\logs\stdout" 
-                hostingModel="inprocess">
-      <environmentVariables>
-        <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" />
-      </environmentVariables>
     </aspNetCore>
-    -->
     
   </system.webServer>
 </configuration>
